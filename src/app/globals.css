@@ -4,14 +4,14 @@
 @import "tailwindcss";
 
 :root {
-  /* Core palette */
-  --background: #f6f8ff;
-  --foreground: #0c1225;
+  /* Core palette — warm neutral, not cold navy */
+  --background: #f8f9fc;
+  --foreground: #111827;
   --card: #ffffff;
-  --card-foreground: #0c1225;
-  --border: #e4e9f2;
-  --muted: #f0f3fb;
-  --muted-foreground: #6b7a99;
+  --card-foreground: #111827;
+  --border: #e5e8f0;
+  --muted: #f1f4f9;
+  --muted-foreground: #6b7280;
 
   /* Brand */
   --primary: #5b6cf9;
@@ -21,10 +21,10 @@
 
   /* Utility */
   --radius: 0.875rem;
-  --shadow-sm: 0 1px 3px rgba(15, 23, 60, 0.06), 0 1px 2px rgba(15, 23, 60, 0.04);
-  --shadow-md: 0 4px 16px rgba(15, 23, 60, 0.08), 0 2px 6px rgba(15, 23, 60, 0.04);
-  --shadow-lg: 0 12px 40px rgba(15, 23, 60, 0.12), 0 4px 12px rgba(15, 23, 60, 0.06);
-  --shadow-xl: 0 24px 64px rgba(15, 23, 60, 0.16), 0 8px 20px rgba(15, 23, 60, 0.08);
+  --shadow-sm: 0 1px 3px rgba(17, 24, 39, 0.06), 0 1px 2px rgba(17, 24, 39, 0.04);
+  --shadow-md: 0 4px 16px rgba(17, 24, 39, 0.08), 0 2px 6px rgba(17, 24, 39, 0.04);
+  --shadow-lg: 0 12px 40px rgba(17, 24, 39, 0.10), 0 4px 12px rgba(17, 24, 39, 0.06);
+  --shadow-xl: 0 24px 64px rgba(17, 24, 39, 0.14), 0 8px 20px rgba(17, 24, 39, 0.08);
 }
 
 .dark {
@@ -67,8 +67,9 @@ body {
   color: var(--foreground);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 15px;
-  line-height: 1.7;
-  letter-spacing: -0.01em;
+  line-height: 1.75;
+  /* neutral tracking — no negative spacing on body so light-mode text breathes */
+  letter-spacing: 0em;
   min-height: 100vh;
   transition: background 0.3s ease, color 0.3s ease;
   margin: 0;
@@ -77,16 +78,18 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-  letter-spacing: -0.03em;
-  line-height: 1.2;
+  /* slightly tighter than default but not crushed */
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  color: var(--foreground);
 }
 
 /* ─── Typography Utilities ──────────────────────────────────── */
 .display-text {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 1.1;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
 }
 
 .body-text {
