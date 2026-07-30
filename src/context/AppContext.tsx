@@ -1,6 +1,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
 interface AppContextType {
   darkMode: boolean;
@@ -14,6 +16,8 @@ interface AppContextType {
   isInCompare: (id: string) => boolean;
   recentlyViewed: string[];
   addToRecentlyViewed: (id: string) => void;
+  user: User | null;
+  signOut: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -23,7 +27,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [compareList, setCompareList] = useState<string[]>([]);
   const [recentlyViewed, setRecentlyViewed] = useState<string[]>([]);
+  const [user, setUser] = useState<User | null>(null);
 
+  // Hydrate from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("darkMode");
     if (saved === "true") setDarkMode(true);
@@ -35,6 +41,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (savedRecent) setRecentlyViewed(JSON.parse(savedRecent));
   }, []);
 
+  // Supabase auth listener
+  useEffect(() => {
+    const supabase = createClient();
+
+    // Get initial session
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user ?? null);
+    });
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Dark mode sync
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");
@@ -85,12 +109,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const signOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setUser(null);
+  };
+
   return (
     <AppContext.Provider value={{
       darkMode, toggleDarkMode,
       favorites, toggleFavorite, isFavorite,
       compareList, addToCompare, removeFromCompare, isInCompare,
       recentlyViewed, addToRecentlyViewed,
+      user, signOut,
     }}>
       {children}
     </AppContext.Provider>

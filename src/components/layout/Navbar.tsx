@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Search, GitCompare, Sparkles, Heart, Info,
-  Moon, Sun, Menu, X, User, BrainCircuit
+  Moon, Sun, Menu, X, User, BrainCircuit, LogOut, LayoutDashboard
 } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 import { cn } from "@/lib/utils";
@@ -22,9 +22,22 @@ const navLinks = [
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { darkMode, toggleDarkMode, favorites, compareList } = useApp();
+  const { darkMode, toggleDarkMode, favorites, compareList, user, signOut } = useApp();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close user menu on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -98,13 +111,77 @@ export default function Navbar() {
                 {darkMode ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-[18px] h-[18px]" />}
               </button>
 
-              <Link
-                href="/dashboard"
-                className="p-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all"
-                aria-label="Dashboard"
-              >
-                <User className="w-[18px] h-[18px]" />
-              </Link>
+              {/* User avatar / login button */}
+              {user ? (
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="flex items-center gap-2 p-1 pr-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                    aria-label="User menu"
+                  >
+                    {user.user_metadata?.avatar_url ? (
+                      <img
+                        src={user.user_metadata.avatar_url}
+                        alt={user.user_metadata?.full_name ?? "User"}
+                        className="w-7 h-7 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <div className="w-7 h-7 rounded-lg gradient-bg flex items-center justify-center">
+                        <User className="w-3.5 h-3.5 text-white" />
+                      </div>
+                    )}
+                    <span className="text-[0.8rem] font-semibold text-slate-700 dark:text-slate-200 hidden sm:block max-w-[80px] truncate">
+                      {user.user_metadata?.full_name?.split(" ")[0] ?? "Account"}
+                    </span>
+                  </button>
+
+                  {/* Dropdown */}
+                  <AnimatePresence>
+                    {userMenuOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 4 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 4 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700/60 shadow-xl shadow-slate-900/10 dark:shadow-black/30 overflow-hidden z-50"
+                      >
+                        {/* Profile info */}
+                        <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+                          <p className="text-[0.82rem] font-bold text-slate-900 dark:text-white truncate">
+                            {user.user_metadata?.full_name ?? "Student"}
+                          </p>
+                          <p className="text-[0.75rem] text-slate-400 truncate">{user.email}</p>
+                        </div>
+                        <div className="p-1.5">
+                          <Link
+                            href="/dashboard"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[0.85rem] font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                          >
+                            <LayoutDashboard className="w-4 h-4 text-indigo-500" />
+                            Dashboard
+                          </Link>
+                          <button
+                            onClick={() => { signOut(); setUserMenuOpen(false); }}
+                            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[0.85rem] font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                          >
+                            <LogOut className="w-4 h-4" />
+                            Sign out
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  className="p-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all"
+                  aria-label="Sign in"
+                >
+                  <User className="w-[18px] h-[18px]" />
+                </Link>
+              )}
 
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
