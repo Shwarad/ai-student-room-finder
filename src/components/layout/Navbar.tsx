@@ -28,6 +28,16 @@ export default function Navbar() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
+  // Only the homepage has a dark hero — all other pages need a solid navbar
+  const isHomePage = pathname === "/";
+  // Icon/button style: white on dark hero, slate on light pages
+  const iconCls = cn(
+    "p-2.5 rounded-xl transition-all",
+    isHomePage && !scrolled
+      ? "text-white/80 hover:text-white hover:bg-white/15"
+      : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+  );
+
   // Close user menu on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -49,10 +59,12 @@ export default function Navbar() {
     <>
       <header
         className={cn(
-          "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
-          scrolled
-            ? "bg-white/85 dark:bg-slate-900/85 backdrop-blur-2xl shadow-[0_1px_20px_rgba(15,23,60,0.08)] border-b border-white/60 dark:border-slate-700/40"
-            : "bg-transparent"
+          "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+          // On the homepage (dark hero), go transparent until scrolled.
+          // On every other page, always show the solid bar so text is visible.
+          isHomePage && !scrolled
+            ? "bg-transparent"
+            : "bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl shadow-[0_1px_0_0_rgba(17,24,39,0.08)] border-b border-slate-200/80 dark:border-slate-700/50"
         )}
       >
         <div className="max-w-7xl mx-auto px-5 sm:px-8 lg:px-10">
@@ -65,12 +77,21 @@ export default function Navbar() {
               </div>
               <span className="font-bold text-[1.05rem] hidden sm:block tracking-tight">
                 <span className="gradient-text">AI</span>
-                <span className="text-slate-800 dark:text-slate-100"> RoomFinder</span>
+                {/* On dark hero (homepage, not scrolled) use white; otherwise use dark */}
+                <span className={cn(
+                  "transition-colors duration-300",
+                  isHomePage && !scrolled ? "text-white" : "text-slate-800 dark:text-slate-100"
+                )}> RoomFinder</span>
               </span>
             </Link>
 
             {/* Desktop Nav */}
-            <nav className="hidden lg:flex items-center gap-0.5 bg-slate-100/70 dark:bg-slate-800/50 rounded-2xl px-2 py-1.5">
+            <nav className={cn(
+              "hidden lg:flex items-center gap-0.5 rounded-2xl px-2 py-1.5",
+              isHomePage && !scrolled
+                ? "bg-white/10 backdrop-blur-sm"
+                : "bg-slate-100 dark:bg-slate-800/60"
+            )}>
               {navLinks.map(({ href, label, icon: Icon }) => {
                 const isActive = pathname === href;
                 return (
@@ -81,7 +102,9 @@ export default function Navbar() {
                       "relative flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[0.84rem] font-medium transition-all duration-200",
                       isActive
                         ? "gradient-bg text-white shadow-md shadow-indigo-500/20"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700/60"
+                        : isHomePage && !scrolled
+                          ? "text-white/80 hover:text-white hover:bg-white/15"
+                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700/60"
                     )}
                   >
                     <Icon className="w-3.5 h-3.5" />
@@ -105,10 +128,10 @@ export default function Navbar() {
             <div className="flex items-center gap-1.5">
               <button
                 onClick={toggleDarkMode}
-                className="p-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all"
+                className={iconCls}
                 aria-label="Toggle dark mode"
               >
-                {darkMode ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-[18px] h-[18px]" />}
+                {darkMode ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
               </button>
 
               {/* User avatar / login button */}
@@ -176,7 +199,7 @@ export default function Navbar() {
               ) : (
                 <Link
                   href="/login"
-                  className="p-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all"
+                  className={iconCls}
                   aria-label="Sign in"
                 >
                   <User className="w-[18px] h-[18px]" />
@@ -185,7 +208,7 @@ export default function Navbar() {
 
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="lg:hidden p-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                className={cn("lg:hidden", iconCls)}
                 aria-label="Toggle menu"
               >
                 {mobileOpen ? <X className="w-[18px] h-[18px]" /> : <Menu className="w-[18px] h-[18px]" />}
